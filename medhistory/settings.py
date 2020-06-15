@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-
+from .secrets import ProjectSecretKey, DatabaseSecret
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7ue0o3k@10@+3s@&jx9d09rg)l&a(tv!-8i!6)@qo*7@4x)=hp'
+SECRET_KEY =ProjectSecretKey.secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'jwtauth',
     'cart',
     'django_better_admin_arrayfield',
+    'user_signup',
+
+
 
 ]
 
@@ -81,12 +84,12 @@ WSGI_APPLICATION = 'medhistory.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'medhistory',
-        'USER': 'arshan',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': DatabaseSecret.engine,
+        'NAME': DatabaseSecret.name,
+        'USER': DatabaseSecret.user,
+        'PASSWORD': DatabaseSecret.password,
+        'HOST': DatabaseSecret.host,
+        'PORT': DatabaseSecret.port,
     }
 }
 
@@ -114,8 +117,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
 
+TIME_ZONE = 'Asia/Calcutta'
 USE_I18N = True
 
 USE_L10N = True
