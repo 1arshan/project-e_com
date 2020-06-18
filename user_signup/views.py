@@ -4,8 +4,15 @@ from rest_framework.views import APIView
 from rest_framework import status
 from .models import TempUser
 from datetime import datetime, timezone
+from .mail import sendmail
+from .token import get_tokens_for_user
+from django.http import HttpResponse
+from django.contrib.auth import login
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode
+from .token import account_activation_token
 from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class TempUserView(APIView):
@@ -13,11 +20,10 @@ class TempUserView(APIView):
     def post(self, request):
         data = request.data
         try:
-            t = TempUser.objects.get(phone_number="+91" +data['phone_number'])
-            print(t)
+            t = TempUser.objects.get(phone_number="+91" + data['phone_number'])
             serializer = TempUserSerializer(t, data=data)
 
-        except t.DoesNotExist:
+        except Exception:
             serializer = TempUserSerializer(data=data)
 
         if serializer.is_valid():
@@ -47,11 +53,19 @@ class VerifyOtpView(APIView):
                                                 password=data.password, first_name=data.first_name,
                                                 last_name=data.last_name)
                 user.save()
+                if user.email:
+                    current_site = get_current_site(request)
+                    sendmail(user, current_site)
+                    mailotp = "please verify your mail also"
+                else:
+                    mailotp = "it will be better if you also provide us your email address"
+
                 x = get_tokens_for_user(user)
 
                 pr = "phone number verified  " \
                      + "\naccess token: " + x['access'] \
-                     + "\nrefresh token: " + x['refresh']
+                     + "\nrefresh token: " + x['refresh'] \
+                     + mailotp
                 data.delete()
 
                 return Response(pr, status=status.HTTP_202_ACCEPTED)
@@ -59,9 +73,17 @@ class VerifyOtpView(APIView):
         return Response("OTP expire", status=status.HTTP_200_OK)
 
 
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
+#do a redirection to login page
+def activate_account(request, uidb64, token):
+    try:
+        uid = force_bytes(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        return HttpResponse('Email_verified')
+    else:
+        return HttpResponse('Activation link is invalid!')

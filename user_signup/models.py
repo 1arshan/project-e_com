@@ -5,7 +5,13 @@ import random
 from django.http import HttpResponse
 from twilio.rest import Client
 from medhistory.secrets import SmsToken
+from django.contrib.auth.models import User
 
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    email_confirm = models.BooleanField(default=False)
+    
 
 class TempUser(models.Model):
     first_name = models.CharField(max_length=15)
