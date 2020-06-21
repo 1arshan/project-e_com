@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from .models import TempUser
 from datetime import datetime, timezone
-from .mail import sendmail
+from braodcaster.mail import MailVerification
 from .token import get_tokens_for_user
 from django.http import HttpResponse
 from django.contrib.auth import login
@@ -55,17 +55,17 @@ class VerifyOtpView(APIView):
                 user.save()
                 if user.email:
                     current_site = get_current_site(request)
-                    sendmail(user, current_site)
-                    mailotp = "please verify your mail also"
+                    MailVerification(user, current_site)
+                    mail_otp = "please verify your mail also"
                 else:
-                    mailotp = "it will be better if you also provide us your email address"
+                    mail_otp = "it will be better if you also provide us your email address"
 
                 x = get_tokens_for_user(user)
 
-                pr = "phone number verified  " \
+                pr = str("phone number verified  " \
                      + "\naccess token: " + x['access'] \
                      + "\nrefresh token: " + x['refresh'] \
-                     + mailotp
+                     + mail_otp)
                 data.delete()
 
                 return Response(pr, status=status.HTTP_202_ACCEPTED)

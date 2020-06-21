@@ -15,18 +15,16 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY =ProjectSecretKey.secret_key
+SECRET_KEY = ProjectSecretKey.secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -37,13 +35,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # -----third party app----
     'rest_framework',
     'jwtauth',
-    'cart',
     'django_better_admin_arrayfield',
+
+    # ----user defined app----
+    'cart',
     'user_signup',
-
-
+    'braodcaster',
 
 ]
 
@@ -77,7 +78,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'medhistory.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -110,12 +110,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 
 TIME_ZONE = 'Asia/Calcutta'
 USE_I18N = True
@@ -135,5 +133,5 @@ REST_FRAMEWORK = {
 
 STATIC_URL = '/static/'
 
-MEDIA_ROOT =os.path.join(BASE_DIR,'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
