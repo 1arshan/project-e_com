@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from twilio.rest import Client
 from medhistory.secrets import SmsToken
 import asyncio
@@ -8,9 +7,12 @@ async def broadcast_sms(phone_number, content):
     message_to_broadcast = content
     client = Client(SmsToken.sid_key, SmsToken.secret_key)
     phone_number = "+91" + phone_number
-    client.messages.create(to=phone_number,
-                           from_=SmsToken.phone_number,
-                           body=message_to_broadcast)
+    try:
+        client.messages.create(to=phone_number,
+                               from_=SmsToken.phone_number,
+                               body=message_to_broadcast)
+    except Exception:
+        pass
     return Response("messages sent!", status=None)
 
 

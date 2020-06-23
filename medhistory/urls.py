@@ -8,7 +8,7 @@ urlpatterns = [
     path('api/', include('jwtauth.urls')),
     path('cart/', include('cart.urls')),
     path('signup/', include('user_signup.urls')),
-    path('login/', include('user_signup.urls')),
+    #path('login/', include('user_signup.urls')),
 ]
 
 if settings.DEBUG:
