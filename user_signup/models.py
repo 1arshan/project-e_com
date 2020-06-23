@@ -2,13 +2,16 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 import random
-from braodcaster.sms import broadcast_sms
+from braodcaster.sms import PrepareSms
 from django.contrib.auth.models import User
-import asyncio
+
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    email_confirm = models.BooleanField(default=False)
+    email_verified = models.BooleanField(default=False)
+    otp = models.CharField(max_length=10, blank=True)
+    date = models.DateTimeField(auto_now=True)
 
 
 class TempUser(models.Model):
@@ -23,12 +26,7 @@ class TempUser(models.Model):
 
 @receiver(pre_save, sender=TempUser)
 def create_sub1(sender, instance, **kwargs):
-    if instance.phone_number.find('+91', 0, 3) == -1:
-        instance.phone_number = "+91" + instance.phone_number
     instance.otp = random.randrange(10101, 909090)
     content = "verification code is: " + str(instance.otp) + "\nthis code will valid for only 45 secs"
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(broadcast_sms(instance.phone_number, content))
-    loop.close()
+    PrepareSms(instance.phone_number, content)
 
