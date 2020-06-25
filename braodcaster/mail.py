@@ -5,8 +5,9 @@ from django.utils.http import urlsafe_base64_encode
 from user_signup.token import account_activation_token
 from medhistory.secrets import EmailToken
 import asyncio
+from .tasks import send_parallel_mail
 
-
+#async but not parallel
 async def sendmail(subject, content, to_email):
     message = Mail(
         from_email=EmailToken.from_email,
@@ -36,10 +37,7 @@ def MailVerification(user, current_site):
                     '<p>Please click on the link to confirm your registration,</p>'
                     'http://' + domain + '/' + 'signup/verify_email/' + uid + '/' + token)
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(sendmail(subject, html_content, receiver_email))
-    loop.close()
+    send_parallel_mail.delay(subject, html_content, receiver_email)
 
 
 def PrepareEmail(subject, content, to_email):

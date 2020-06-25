@@ -10,14 +10,13 @@ from django.utils.http import urlsafe_base64_decode
 from .token import account_activation_token
 from django.contrib.auth.models import User
 from braodcaster.sms import PrepareSms
-from braodcaster.mail import PrepareEmail
 from django.core.exceptions import ObjectDoesNotExist
 import random
 from django.db.models import Q
 from django.utils.http import urlsafe_base64_encode
 from rest_framework.decorators import api_view
 from .token import get_tokens_for_user
-
+from braodcaster.tasks import send_parallel_mail
 
 @api_view(['POST'])
 def otp_login_view(request):
@@ -100,7 +99,7 @@ class PasswordResetView(APIView):
             try:
                 content = str(
                     "<p>verification code is: " + str(self.otp) + "\nthis code will valid for only 45 secs</p>")
-                PrepareEmail("Resset Your Account", content, data['username'])
+                send_parallel_mail.delay("Resset Your Account", content, data['username'])
                 Profile.objects.update_or_create(user=t, defaults={'user': t, 'otp': self.otp})
             except ObjectDoesNotExist:
                 pass

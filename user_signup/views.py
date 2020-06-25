@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 from rest_framework import status
 from .models import TempUser, Profile
 from datetime import datetime, timezone
-from braodcaster.mail import MailVerification
 from .token import get_tokens_for_user
 from django.http import HttpResponse
 from django.contrib.sites.shortcuts import get_current_site
@@ -12,8 +11,9 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
 from .token import account_activation_token
 from django.contrib.auth.models import User
-
-
+from .tasks import send_parallel_mail
+from django.utils.http import urlsafe_base64_encode
+from braodcaster.mail import MailVerification
 
 #temperory user model till phone number verified
 class TempUserView(APIView):
@@ -58,19 +58,20 @@ class VerifyOtpView(APIView):
                 if user.email:
                     current_site = get_current_site(request)
                     MailVerification(user, current_site)
+
+                    #MailVerification(subject, html_content, receiver_email)
+
                     mail_otp = "please verify your mail also"
                 else:
                     mail_otp = "it will be better if you also provide us your email address"
 
                 x = get_tokens_for_user(user)
+                msg = "phone number verified " + mail_otp
+                x["message"] = msg
 
-                pr = str("phone number verified  " \
-                         + "\naccess token: " + x['access'] \
-                         + "\nrefresh token: " + x['refresh'] \
-                         + mail_otp)
                 data.delete()
 
-                return Response(pr, status=status.HTTP_202_ACCEPTED)
+                return Response(x, status=status.HTTP_202_ACCEPTED)
             return Response("OTP incorrect", status=status.HTTP_200_OK)
         return Response("OTP expire", status=status.HTTP_200_OK)
 
